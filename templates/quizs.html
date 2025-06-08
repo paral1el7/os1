@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberWise Dashboard - 题库页面</title>
+    <link rel="icon" type="image/jpeg" href="../static/img/CyberWise_logo.jpg">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css">
+    <link rel="stylesheet" href="../static/css/style.css?v=2.4.0">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            justify-content: flex-start;
+            align-items: stretch;
+            background-color: #0f0f0f;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 20px 20px 20px 20px;
+            background: none;
+            overflow-y: auto;
+        }
+
+        .quiz-root {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .quiz-toolbar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .quiz-type-dropdown {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .quiz-type-btn {
+            background: #00eaff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            height: 44px;
+            justify-content: center;
+        }
+
+        .quiz-type-btn:hover {
+            background: #00d4e6;
+            transform: translateY(-1px);
+        }
+
+        .quiz-type-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 8px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .quiz-type-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            color: #fff;
+        }
+
+        .quiz-type-item:hover {
+            background: rgba(0, 234, 255, 0.2);
+        }
+
+        .quiz-score {
+            font-size: 16px;
+            font-weight: 600;
+            color: #00eaff;
+            padding: 0 20px;
+            background: rgba(0, 234, 255, 0.15);
+            border-radius: 12px;
+            min-width: 180px;
+            height: 44px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            margin: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-clear-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 70px;
+            height: 44px;
+            flex: 0 0 auto;
+        }
+
+        .quiz-clear-btn:hover {
+            background: #ff5252;
+            transform: translateY(-1px);
+        }
+
+        .quiz-card {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            padding: 32px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .quiz-question {
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+            text-align: left;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .quiz-options {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 50px;
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(0, 234, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .quiz-option.selected {
+            background: rgba(0, 234, 255, 0.2);
+            border-color: #00eaff;
+            color: #fff;
+        }
+
+        .quiz-option.correct {
+            background: rgba(46, 213, 115, 0.2);
+            border-color: #2ed573;
+        }
+
+        .quiz-option.wrong {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff6b6b;
+        }
+
+        .quiz-option-label {
+            background: #00eaff;
+            color: #000;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .quiz-option.correct .quiz-option-label {
+            background: #2ed573;
+        }
+
+        .quiz-option.wrong .quiz-option-label {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .quiz-feedback {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 8px 0;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .quiz-feedback.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quiz-feedback.correct {
+            color: #2ed573;
+        }
+
+        .quiz-feedback.wrong {
+            color: #ff6b6b;
+        }
+
+        .quiz-next-btn {
+            background: #00eaff;
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+        }
+
+        .quiz-next-btn:hover {
+            background: #00d4e6;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .main {
+                padding: 20px 16px 16px 16px;
+            }
+
+            .quiz-root {
+                gap: 20px;
+            }
+
+            .quiz-toolbar {
+                flex-direction: column;
+                gap: 12px;
+                padding: 16px;
+            }
+
+            .quiz-card {
+                padding: 24px 16px;
+                min-height: 350px;
+            }
+
+            .quiz-question {
+                font-size: 20px;
+            }
+
+            .quiz-option {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+
+            .quiz-type-btn, .quiz-clear-btn, .quiz-next-btn {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .quiz-score {
+                width: 100%;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-card {
+                padding: 20px 12px;
+            }
+
+            .quiz-question {
+                font-size: 18px;
+            }
+
+            .quiz-option {
+                padding: 12px 14px;
+                font-size: 14px;
+                gap: 10px;
+            }
+
+            .quiz-option-label {
+                width: 28px;
+                height: 28px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body data-page="dashboard">
+
+    <div class="top-toolbar">
+        <button id="language-btn" class="toolbar-btn" onclick="toggleLanguage()">中文</button>
+    </div>
+
+    <div class="sidebar">
+        <div class="logo">
+            <div style="display: flex; justify-content: center; align-items: center;">
+                <img src="../static/img/CyberWise.jpg" alt="CyberWise" style="max-width: 130px; height: auto;">
+            </div>
+        </div>
+        <div class="user-info-dropdown">
+            <div class="user-info" id="userEmail" onclick="toggleUserDropdown()">Loading user info...
+                <i class="ri-arrow-down-s-line dropdown-arrow"></i>
+            </div>
+            <div class="user-dropdown-menu" id="userDropdownMenu">
+                <div class="dropdown-item" onclick="logout()">
+                    <i class="ri-logout-box-line"></i>
+                    <span data-lang="logout">Logout</span>
+                </div>
+            </div>
+        </div>
+        <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input type="text" data-lang="searchPlaceholder" placeholder="Search Knowledge Base">
+            <i class="ri-add-line" style="cursor: pointer;" onclick="createNewDocument()"></i>
+        </div>
+        <div class="menu">
+            <div class="menu-item" onclick="goToDashboard()" style="cursor: pointer;"><i class="ri-time-line"></i><span data-lang="menuStart">Start</span></div>
+            <div class="menu-item" onclick="goToAI()" style="cursor: pointer;"><i class="ri-magic-line"></i><span data-lang="menuAI">AI Writing</span></div>
+            <div class="menu-item" onclick="goToNotes()" style="cursor: pointer;"><i class="ri-quill-pen-line"></i><span data-lang="menuNotes">Notes</span></div>
+            <div class="menu-item" onclick="goToKnowledgeBase()" style="cursor: pointer;">
+                <i class="ri-book-open-line"></i>
+                <span data-lang="knowledgeBase">Knowledge Base</span>
+            </div>
+            <div class="menu-item" onclick="goToFavorites()" style="cursor: pointer;"><i class="ri-star-line"></i><span data-lang="menuFavorites">Favorites</span></div>
+            <div class="menu-item active" onclick="goToQuiz()" style="cursor: pointer;"><i class="ri-questionnaire-line"></i><span data-lang="menuQuiz">Quiz</span></div>
+        </div>
+        <div class="logout" onclick="logout()"><i class="ri-logout-box-line"></i> <span data-lang="logOut">Log Out</span></div>
+    </div>
+
+    <div class="main">
+        <div class="quiz-root">
+            <div class="quiz-toolbar">
+                <div class="quiz-type-dropdown">
+                    <button class="quiz-type-btn" id="quizTypeBtn"><span data-lang="quizTypeChoice">Single Choice</span> <i class="ri-arrow-down-s-line"></i></button>
+                    <div class="quiz-type-list" id="quizTypeList" style="display:none;">
+                        <div class="quiz-type-item" data-type="choice" data-lang="quizTypeChoice">Single Choice</div>
+                        <div class="quiz-type-item" data-type="trueFalse" data-lang="quizTypeTrueFalse">True/False</div>
+                        <div class="quiz-type-item" data-type="mixed" data-lang="quizTypeMixed">Mixed</div>
+                    </div>
+                </div>
+                <div class="quiz-score" id="quizScore"><span data-lang="consecutiveCorrect">Consecutive Correct</span>: 0</div>
+                <button class="quiz-clear-btn" id="quizClearBtn" data-lang="clearHistory">clear</button>
+            </div>
+            <div class="quiz-card">
+                <div class="quiz-question" id="quizQuestion">Loading questions...</div>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+                <button class="quiz-next-btn" id="quizNextBtn" style="display:none;" data-lang="nextQuestion">Next Question</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 导航函数定义 ===
+        function goToDashboard() {
+            console.log('跳转到Dashboard');
+            window.location.href = 'dashboard.html';
+        }
+        
+        function goToAI() {
+            console.log('跳转到AI Writing');
+            window.location.href = 'dashboard.html#ai';
+        }
+        
+        function goToNotes() {
+            console.log('跳转到Notes');
+            window.location.href = 'dashboard.html#notes';
+        }
+        
+        function goToKnowledgeBase() {
+            console.log('跳转到Knowledge Base');
+            window.location.href = 'knowledge_base.html';
+        }
+        
+        function goToFavorites() {
+            console.log('跳转到Favorites');
+            window.location.href = 'dashboard.html#favorites';
+        }
+        
+        function goToQuiz() {
+            console.log('当前已在Quiz页面');
+            // 当前页面，可以刷新或者什么都不做
+            window.location.reload();
+        }
+        
+        // 下拉菜单显示/隐藏
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+        // 点击其他地方关闭下拉菜单
+        window.onclick = function(event) {
+            if (!event.target.closest('#question-type-selector') && !event.target.closest('.dropdown-menu')) {
+                document.getElementById('dropdownMenu').style.display = 'none';
+            }
+        };
+        // 防止清空历史按钮点击冒泡导致下拉框关闭
+        function clearHistory(event) {
+            event.stopPropagation();
+            window.clearHistory && window.clearHistory();
+        }
+        
+        // 初始化语言
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initLanguage === 'function') {
+                initLanguage();
+            }
+        });
+        
+        // 监听语言切换事件
+        document.addEventListener('languageChanged', function() {
+            updateQuizLanguage();
+        });
+        
+        // 更新Quiz页面语言
+        function updateQuizLanguage() {
+            // 更新所有带data-lang属性的元素
+            document.querySelectorAll('[data-lang]').forEach(element => {
+                const key = element.getAttribute('data-lang');
+                if (window.getText && typeof getText === 'function') {
+                    element.textContent = getText(key);
+                }
+            });
+            
+            // 更新分数显示
+            if (window.updateScore && typeof updateScore === 'function') {
+                updateScore();
+            }
+            
+            // 更新当前显示的判断题选项
+            if (window.updateCurrentQuestionOptions && typeof updateCurrentQuestionOptions === 'function') {
+                updateCurrentQuestionOptions();
+            }
+        }
+    </script>
+    <script src="../static/js/firebase-init.js?v=2.2.0"></script>
+    <script src="../static/js/language.js?v=2.2.0"></script>
+    <script src="../static/js/quizs_new.js?v=2.3.0"></script>
+</body>
+</html>
+
+
+

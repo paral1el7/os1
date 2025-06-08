@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CyberWise Register</title>
+  <link rel="icon" type="image/jpeg" href="../static/img/CyberWise_logo.jpg">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../static/css/style.css?v=2.4.0">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body data-page="register">
+  <!-- 右上角工具栏 -->
+  <div class="top-toolbar">
+    <button id="language-btn" class="toolbar-btn" onclick="toggleLanguage()">中文</button>
+  </div>
+
+  <div class="center-container">
+    <!-- CyberWise Logo 图片 - 无边框无阴影 -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <img src="../static/img/CyberWise.jpg" alt="CyberWise" style="max-width: 200px; height: auto;">
+    </div>
+    
+    <input type="text" id="username" data-lang="usernamePlaceholder2" placeholder="Username">
+    <input type="email" id="email" data-lang="emailPlaceholder" placeholder="Email">
+    
+    <!-- 密码输入框容器 -->
+    <div class="password-container">
+      <input type="password" id="password" data-lang="passwordPlaceholder" placeholder="Password">
+      <i class="ri-eye-off-line password-toggle" onclick="togglePasswordVisibility('password', this)"></i>
+    </div>
+    
+    <!-- 确认密码输入框容器 -->
+    <div class="password-container">
+      <input type="password" id="confirmPassword" data-lang="confirmPasswordPlaceholder" placeholder="Confirm Password">
+      <i class="ri-eye-off-line password-toggle" onclick="togglePasswordVisibility('confirmPassword', this)"></i>
+    </div>
+    
+    <button onclick="register()" data-lang="registerBtn">Register</button>
+    <button class="link-button" onclick="goToLogin()" data-lang="signInLink">Already have an account? Sign In</button>
+  </div>
+
+  <script src="../static/js/firebase-init.js?v=2.2.0"></script>
+  <script src="../static/js/language.js?v=2.2.0"></script>
+  <script src="../static/js/register.js?v=2.2.0"></script>
+  
+  <script>
+    // 添加导航函数
+    function goToLogin() {
+      window.location.href = window.location.origin + '/templates/login.html';
+    }
+    
+    // 切换密码可见性（通用函数）
+    function togglePasswordVisibility(inputId, iconElement) {
+      const passwordInput = document.getElementById(inputId);
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        iconElement.className = 'ri-eye-line password-toggle';
+      } else {
+        passwordInput.type = 'password';
+        iconElement.className = 'ri-eye-off-line password-toggle';
+      }
+    }
+  </script>
+</body>
+</html> 

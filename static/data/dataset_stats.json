@@ -1,0 +1,36 @@
+{
+  "total_questions": 385,
+  "categories": [
+    "Configuration & Management",
+    "Compatibility & Dependencies",
+    "Cryptography",
+    "Performance Optimization",
+    "Feature Requests & Enhancements",
+    "Error & Exception Handling",
+    "Authentication Mechanisms",
+    "Anomaly detection"
+  ],
+  "subcategories": [
+    "Resource Usage Optimization",
+    "Data Protection",
+    "Runtime Errors",
+    "Network/Protocol Errors",
+    "Key and Certificate Management",
+    "Latency/Speed Optimization",
+    "UI/UX Enhancements",
+    "Build/Compile Errors",
+    "User Identity Verification",
+    "Breach detection",
+    "Data Leak Detection",
+    "Third-party Dependencies",
+    "Cryptographic Algorithms",
+    "System Deployment",
+    "Feature Requests",
+    "Improvement",
+    "Modern Authentication Protocols",
+    "Credential Validation",
+    "Security Configuration",
+    "Breach Detection"
+  ],
+  "generated_at": "2025-05-29T17:10:59.603512"
+}
